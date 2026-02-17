@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkpoint Tracker - Advanced Goal Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --color-primary: #6366f1;
+    --color-primary-light: #818cf8;
+    --color-primary-dark: #4f46e5;
+    --color-secondary: #8b5cf6;
+    --color-accent: #06b6d4;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-neutral-950: #030712;
+    --color-neutral-900: #0f172a;
+    --color-neutral-800: #1e293b;
+    --color-neutral-700: #334155;
+    --color-neutral-600: #475569;
+    --color-neutral-400: #cbd5e1;
+    --color-neutral-300: #e2e8f0;
+    --color-neutral-200: #f1f5f9;
+    --color-neutral-100: #f8fafc;
+    --color-white: #ffffff;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: var(--color-neutral-300);
+    line-height: 1.6;
+    min-height: 100vh;
+    transition: background var(--transition-normal) ease;
+}
+
+body.light-mode {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    color: var(--color-neutral-700);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--color-white);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+}
+
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode h5,
+body.light-mode h6 {
+    color: var(--color-neutral-950);
+}
+
+h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+header {
+    background: var(--color-neutral-800);
+    border-bottom: 1px solid var(--color-neutral-700);
+    padding: 1rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+body.light-mode header {
+    background: var(--color-white);
+    border-bottom-color: var(--color-neutral-200);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+header h1 {
+    font-size: 1.875rem;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.header-controls {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.dark-toggle {
+    background: var(--color-neutral-700);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 0.75rem 0.875rem;
+    cursor: pointer;
+    font-size: 1.25rem;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--color-white);
+    min-width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+}
+
+body.light-mode .dark-toggle {
+    background: var(--color-neutral-200);
+    border-color: var(--color-neutral-300);
+    color: var(--color-neutral-950);
+}
+
+.dark-toggle:hover {
+    transform: scale(1.08);
+    box-shadow: var(--shadow-md);
+}
+
+.dark-toggle:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.nav-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0 0 0;
+    border-bottom: 2px solid var(--color-neutral-700);
+    flex-wrap: wrap;
+    padding: 0 1.5rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body.light-mode .nav-tabs {
+    border-bottom-color: var(--color-neutral-200);
+}
+
+.nav-tab {
+    background: none;
+    border: none;
+    padding: 0.875rem 1.25rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-neutral-600);
+    font-size: 0.9375rem;
+    position: relative;
+    transition: color var(--transition-normal);
+}
+
+body.light-mode .nav-tab {
+    color: var(--color-neutral-400);
+}
+
+.nav-tab:hover {
+    color: var(--color-primary);
+}
+
+.nav-tab.active {
+    color: var(--color-primary);
+}
+
+.nav-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    border-radius: 2px 2px 0 0;
+}
+
+.nav-tab-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.delete-tab-btn {
+    background: none;
+    border: none;
+    color: var(--color-danger);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.25rem 0.375rem;
+    opacity: 0.5;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    margin-left: 0.5rem;
+    line-height: 1;
+}
+
+.nav-tab-wrapper:hover .delete-tab-btn {
+    opacity: 1;
+}
+
+.delete-tab-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    transform: scale(1.2);
+}
+
+body.light-mode .delete-tab-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+}
+
+.content {
+    padding: 3rem 0;
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+    animation: fadeInUp 400ms ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.input-section {
+    background: var(--color-white);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+    border: 1px solid var(--color-neutral-200);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+}
+
+body.light-mode .input-section {
+    background: var(--color-neutral-800);
+    border-color: var(--color-neutral-700);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.input-section:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary-light);
+}
+
+.input-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.75rem;
+    margin-bottom: 2rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-field label {
+    font-weight: 600;
+    margin-bottom: 0.625rem;
+    color: var(--color-neutral-950);
+    font-size: 0.9375rem;
+    letter-spacing: -0.005em;
+}
+
+body.light-mode .form-field label {
+    color: var(--color-neutral-100);
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    padding: 0.875rem 1rem;
+    border: 1.5px solid var(--color-neutral-300);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all var(--transition-normal);
+    background: var(--color-white);
+    color: var(--color-neutral-950);
+}
+
+.form-field input::placeholder,
+.form-field select::placeholder,
+.form-field textarea::placeholder {
+    color: var(--color-neutral-400);
+}
+
+body.light-mode .form-field input,
+body.light-mode .form-field select,
+body.light-mode .form-field textarea {
+    background: var(--color-neutral-700);
+    border-color: var(--color-neutral-600);
+    color: var(--color-white);
+}
+
+body.light-mode .form-field input::placeholder,
+body.light-mode .form-field select::placeholder,
+body.light-mode .form-field textarea::placeholder {
+    color: var(--color-neutral-500);
+}
+
+.form-field input:hover,
+.form-field select:hover,
+.form-field textarea:hover {
+    border-color: var(--color-primary-light);
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+.form-field textarea {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.65;
+}
+
+.btn {
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 680;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: -0.005em;
+    margin-top: 1.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    font-weight: 680;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(99, 102, 241, 0.45);
+}
+
+.btn-primary:active {
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--color-neutral-200);
+    color: var(--color-neutral-950);
+    border: 1.5px solid var(--color-neutral-300);
+    font-weight: 680;
+}
+
+body.light-mode .btn-secondary {
+    background: var(--color-neutral-700);
+    color: var(--color-white);
+    border-color: var(--color-neutral-600);
+}
+
+.btn-secondary:hover {
+    background: var(--color-neutral-300);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+body.light-mode .btn-secondary:hover {
+    background: var(--color-neutral-600);
+    border-color: var(--color-primary-light);
+}
+
+.btn-secondary.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+}
+
+.btn-danger:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+}
+
+.filter-section {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+    align-items: center;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 2.75rem;
+    border: 1.5px solid var(--color-neutral-300);
+    border-radius: 10px;
+    background: var(--color-white);
+    color: var(--color-neutral-950);
+    transition: all var(--transition-normal);
+}
+
+body.light-mode .search-box input {
+    background: var(--color-neutral-800);
+    border-color: var(--color-neutral-600);
+    color: var(--color-white);
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+.search-box::before {
+    content: '🔍';
+    position: absolute;
+    left: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.stats-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: var(--color-white);
+    border-radius: 12px;
+    padding: 1.75rem 1.5rem;
+    border: 1px solid var(--color-neutral-200);
+    text-align: center;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+body.light-mode .stat-card {
+    background: var(--color-neutral-800);
+    border-color: var(--color-neutral-700);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary-light);
+}
+
+.stat-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.8125rem;
+    color: var(--color-neutral-600);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+}
+
+body.light-mode .stat-label {
+    color: var(--color-neutral-400);
+}
+
+.checkpoints-list {
+    display: grid;
+    gap: 1.75rem;
+}
+
+.checkpoint-item {
+    background: var(--color-white);
+    border-radius: 12px;
+    padding: 1.75rem;
+    border: 1px solid var(--color-neutral-200);
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+body.light-mode .checkpoint-item {
+    background: var(--color-neutral-800);
+    border-color: var(--color-neutral-700);
+}
+
+.checkpoint-item:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary-light);
+    transform: translateY(-4px);
+}
+
+.checkpoint-checkbox {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+    accent-color: var(--color-primary);
+}
+
+.checkpoint-content {
+    flex: 1;
+}
+
+.checkpoint-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-neutral-950);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+}
+
+body.light-mode .checkpoint-title {
+    color: var(--color-white);
+}
+
+.checkpoint-desc {
+    color: var(--color-neutral-600);
+    font-size: 0.9375rem;
+    margin-bottom: 1rem;
+    line-height: 1.65;
+}
+
+body.light-mode .checkpoint-desc {
+    color: var(--color-neutral-400);
+}
+
+.checkpoint-meta {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    font-size: 0.875rem;
+    margin-bottom: 1.25rem;
+}
+
+.meta-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.875rem;
+    background: var(--color-neutral-100);
+    border-radius: 8px;
+    color: var(--color-neutral-700);
+    font-weight: 500;
+    font-size: 0.8125rem;
+    transition: all var(--transition-fast);
+}
+
+body.light-mode .meta-badge {
+    background: var(--color-neutral-700);
+    color: var(--color-neutral-300);
+}
+
+.priority-high { color: var(--color-danger); }
+.priority-medium { color: var(--color-warning); }
+.priority-low { color: var(--color-success); }
+
+.checkpoint-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--color-neutral-600);
+    background: var(--color-white);
+    border-radius: 12px;
+    border: 2px dashed var(--color-neutral-300);
+}
+
+body.light-mode .empty-state {
+    color: var(--color-neutral-400);
+    background: rgba(30, 41, 59, 0.5);
+    border-color: var(--color-neutral-700);
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 1rem;
+    backdrop-filter: blur(2px);
+}
+
+.modal.active {
+    display: flex;
+    animation: modalFadeIn 300ms ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(2px);
+    }
+}
+
+.modal-content {
+    background: var(--color-white);
+    border-radius: 16px;
+    padding: 2.5rem;
+    max-width: 520px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-2xl);
+    animation: slideUp 300ms ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+body.light-mode .modal-content {
+    background: var(--color-neutral-800);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    cursor: pointer;
+    color: var(--color-neutral-600);
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-952);
+}
+
+body.light-mode .modal-close:hover {
+    background: var(--color-neutral-700);
+    color: var(--color-white);
+}
+
+.modal-footer {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 0.875rem 1rem;
+    }
+    
+    .header-content {
+        padding: 0;
+    }
+    
+    .nav-tabs {
+        padding: 0;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .content {
+        padding: 2rem 0;
+    }
+    
+    .filter-section {
+        flex-direction: column;
+        gap: 0.875rem;
+    }
+    
+    .search-box {
+        min-width: 100%;
+    }
+    
+    .checkpoint-item {
+        flex-direction: column;
+        padding: 1.25rem;
+    }
+    
+    .stats-section {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .input-group {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+    
+    .input-section {
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .btn {
+        padding: 0.95rem 2rem;
+        font-size: 0.9rem;
+        margin-top: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .nav-tabs {
+        gap: 0.25rem;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        padding: 0 1rem;
+    }
+    
+    .nav-tab {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+    
+    .stats-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .checkpoint-meta {
+        font-size: 0.75rem;
+    }
+    
+    header h1 {
+        font-size: 1.25rem;
+    }
+    
+    h3 {
+        font-size: 1.125rem;
+    }
+    
+    .input-section {
+        padding: 1.5rem;
+    }
+    
+    .modal-content {
+        padding: 1.75rem;
+    }
+    
+    .stat-value {
+        font-size: 1.875rem;
+    }
+    
+    .btn {
+        padding: 0.95rem 1.75rem;
+        font-size: 0.875rem;
+        margin-top: 1.25rem;
+        width: auto;
+    }
+}
+
+/* Light Mode Styles */
+body.light-mode {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    color: var(--color-neutral-700);
+}
+
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode h5,
+body.light-mode h6 {
+    color: var(--color-neutral-950);
+}
+
+body.light-mode header {
+    background: var(--color-white);
+    border-bottom-color: var(--color-neutral-200);
+}
+
+body.light-mode .nav-tab {
+    color: var(--color-neutral-600);
+}
+
+body.light-mode .input-section {
+    background: var(--color-white);
+    border-color: var(--color-neutral-200);
+}
+
+body.light-mode .form-field label {
+    color: var(--color-neutral-900);
+}
+
+body.light-mode .form-field input,
+body.light-mode .form-field select,
+body.light-mode .form-field textarea {
+    background: var(--color-neutral-100);
+    border-color: var(--color-neutral-300);
+    color: var(--color-neutral-900);
+}
+
+body.light-mode .form-field input::placeholder,
+body.light-mode .form-field select::placeholder,
+body.light-mode .form-field textarea::placeholder {
+    color: var(--color-neutral-500);
+}
+
+body.light-mode .search-box input {
+    background: var(--color-neutral-100);
+    border-color: var(--color-neutral-300);
+    color: var(--color-neutral-900);
+}
+
+body.light-mode .stat-card {
+    background: var(--color-white);
+    border-color: var(--color-neutral-200);
+}
+
+body.light-mode .stat-label {
+    color: var(--color-neutral-600);
+}
+
+body.light-mode .checkpoint-item {
+    background: var(--color-white);
+    border-color: var(--color-neutral-200);
+}
+
+body.light-mode .checkpoint-title {
+    color: var(--color-neutral-950);
+}
+
+body.light-mode .checkpoint-desc {
+    color: var(--color-neutral-700);
+}
+
+body.light-mode .meta-badge {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-900);
+}
+
+body.light-mode .empty-state {
+    color: var(--color-neutral-600);
+}
+
+body.light-mode .modal-content {
+    background: var(--color-white);
+    border-color: var(--color-neutral-200);
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <h1>🎯 Checkpoint Tracker</h1>
+        <div class="header-controls">
+            <button class="dark-toggle" id="darkToggle" title="Toggle dark mode">🌙</button>
+            <a href="index.html" class="btn btn-secondary">← Back Home</a>
+        </div>
+    </div>
+    
+    <div class="nav-tabs">
+        <div class="nav-tab-wrapper" data-subject="dsa">
+            <button class="nav-tab active" data-tab="dsa" data-default="true">📚 DSA</button>
+        </div>
+        <div class="nav-tab-wrapper" data-subject="java">
+            <button class="nav-tab" data-tab="java" data-default="true">☕ Java</button>
+        </div>
+        <div class="nav-tab-wrapper" data-subject="webdev">
+            <button class="nav-tab" data-tab="webdev" data-default="true">🌐 Web Dev</button>
+        </div>
+        <div class="nav-tab-wrapper" data-subject="projects">
+            <button class="nav-tab" data-tab="projects" data-default="true">🚀 Projects</button>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="content">
+        <!-- DSA Section -->
+        <div class="section active" id="dsa">
+            <div class="input-section">
+                <h3>Add New Checkpoint</h3>
+                <div class="input-group">
+                    <div class="form-field">
+                        <label>Title</label>
+                        <input type="text" class="checkpoint-title-input" placeholder="e.g., Array Sorting">
+                    </div>
+                    <div class="form-field">
+                        <label>Priority</label>
+                        <select class="checkpoint-priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Due Date</label>
+                        <input type="date" class="checkpoint-date">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Description</label>
+                    <textarea class="checkpoint-desc-input" placeholder="Add details about this checkpoint..."></textarea>
+                </div>
+                <button class="btn btn-primary" id="addCheckpoint">➕ Add Checkpoint</button>
+            </div>
+
+            <div class="filter-section">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search checkpoints...">
+                </div>
+                <button class="btn btn-secondary filter-btn" data-filter="all">All</button>
+                <button class="btn btn-secondary filter-btn" data-filter="high">🔴 High</button>
+                <button class="btn btn-secondary filter-btn" data-filter="medium">🟡 Medium</button>
+                <button class="btn btn-secondary filter-btn" data-filter="low">🟢 Low</button>
+            </div>
+
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCount">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedCount">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="progressPercent">0%</div>
+                    <div class="stat-label">Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="overdueCount">0</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+            </div>
+
+            <div class="checkpoints-list" id="checkpointsList">
+                <div class="empty-state">
+                    <h3>No checkpoints yet</h3>
+                    <p>Create your first checkpoint above to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Java Section -->
+        <div class="section" id="java">
+            <div class="input-section">
+                <h3>Add New Checkpoint</h3>
+                <div class="input-group">
+                    <div class="form-field">
+                        <label>Title</label>
+                        <input type="text" class="checkpoint-title-input" placeholder="e.g., OOP Concepts">
+                    </div>
+                    <div class="form-field">
+                        <label>Priority</label>
+                        <select class="checkpoint-priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Due Date</label>
+                        <input type="date" class="checkpoint-date">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Description</label>
+                    <textarea class="checkpoint-desc-input" placeholder="Add details about this checkpoint..."></textarea>
+                </div>
+                <button class="btn btn-primary" id="addCheckpointJava">➕ Add Checkpoint</button>
+            </div>
+
+            <div class="filter-section">
+                <div class="search-box">
+                    <input type="text" id="searchInputJava" placeholder="Search checkpoints...">
+                </div>
+                <button class="btn btn-secondary filter-btn-java" data-filter="all">All</button>
+                <button class="btn btn-secondary filter-btn-java" data-filter="high">🔴 High</button>
+                <button class="btn btn-secondary filter-btn-java" data-filter="medium">🟡 Medium</button>
+                <button class="btn btn-secondary filter-btn-java" data-filter="low">🟢 Low</button>
+            </div>
+
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCountJava">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedCountJava">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="progressPercentJava">0%</div>
+                    <div class="stat-label">Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="overdueCountJava">0</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+            </div>
+
+            <div class="checkpoints-list" id="checkpointsListJava">
+                <div class="empty-state">
+                    <h3>No checkpoints yet</h3>
+                    <p>Create your first checkpoint above to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Web Dev Section -->
+        <div class="section" id="webdev">
+            <div class="input-section">
+                <h3>Add New Checkpoint</h3>
+                <div class="input-group">
+                    <div class="form-field">
+                        <label>Title</label>
+                        <input type="text" class="checkpoint-title-input" placeholder="e.g., React Hooks">
+                    </div>
+                    <div class="form-field">
+                        <label>Priority</label>
+                        <select class="checkpoint-priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Due Date</label>
+                        <input type="date" class="checkpoint-date">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Description</label>
+                    <textarea class="checkpoint-desc-input" placeholder="Add details about this checkpoint..."></textarea>
+                </div>
+                <button class="btn btn-primary" id="addCheckpointWebDev">➕ Add Checkpoint</button>
+            </div>
+
+            <div class="filter-section">
+                <div class="search-box">
+                    <input type="text" id="searchInputWebDev" placeholder="Search checkpoints...">
+                </div>
+                <button class="btn btn-secondary filter-btn-webdev" data-filter="all">All</button>
+                <button class="btn btn-secondary filter-btn-webdev" data-filter="high">🔴 High</button>
+                <button class="btn btn-secondary filter-btn-webdev" data-filter="medium">🟡 Medium</button>
+                <button class="btn btn-secondary filter-btn-webdev" data-filter="low">🟢 Low</button>
+            </div>
+
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCountWebDev">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedCountWebDev">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="progressPercentWebDev">0%</div>
+                    <div class="stat-label">Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="overdueCountWebDev">0</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+            </div>
+
+            <div class="checkpoints-list" id="checkpointsListWebDev">
+                <div class="empty-state">
+                    <h3>No checkpoints yet</h3>
+                    <p>Create your first checkpoint above to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Section -->
+        <div class="section" id="projects">
+            <div class="input-section">
+                <h3>Add New Checkpoint</h3>
+                <div class="input-group">
+                    <div class="form-field">
+                        <label>Title</label>
+                        <input type="text" class="checkpoint-title-input" placeholder="e.g., Portfolio Website">
+                    </div>
+                    <div class="form-field">
+                        <label>Priority</label>
+                        <select class="checkpoint-priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Due Date</label>
+                        <input type="date" class="checkpoint-date">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Description</label>
+                    <textarea class="checkpoint-desc-input" placeholder="Add details about this checkpoint..."></textarea>
+                </div>
+                <button class="btn btn-primary" id="addCheckpointProjects">➕ Add Checkpoint</button>
+            </div>
+
+            <div class="filter-section">
+                <div class="search-box">
+                    <input type="text" id="searchInputProjects" placeholder="Search checkpoints...">
+                </div>
+                <button class="btn btn-secondary filter-btn-projects" data-filter="all">All</button>
+                <button class="btn btn-secondary filter-btn-projects" data-filter="high">🔴 High</button>
+                <button class="btn btn-secondary filter-btn-projects" data-filter="medium">🟡 Medium</button>
+                <button class="btn btn-secondary filter-btn-projects" data-filter="low">🟢 Low</button>
+            </div>
+
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCountProjects">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedCountProjects">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="progressPercentProjects">0%</div>
+                    <div class="stat-label">Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="overdueCountProjects">0</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+            </div>
+
+            <div class="checkpoints-list" id="checkpointsListProjects">
+                <div class="empty-state">
+                    <h3>No checkpoints yet</h3>
+                    <p>Create your first checkpoint above to get started!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Checkpoint</h2>
+            <button class="modal-close" id="closeModal">✕</button>
+        </div>
+        <div class="form-field" style="margin-bottom: 1.5rem;">
+            <label>Title</label>
+            <input type="text" id="editTitle" class="form-field" style="margin-bottom: 0;">
+        </div>
+        <div class="form-field" style="margin-bottom: 1.5rem;">
+            <label>Description</label>
+            <textarea id="editDesc"></textarea>
+        </div>
+        <div class="input-group" style="margin-bottom: 1.5rem;">
+            <div class="form-field">
+                <label>Priority</label>
+                <select id="editPriority">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label>Due Date</label>
+                <input type="date" id="editDate">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelEdit">Cancel</button>
+            <button class="btn btn-primary" id="saveEdit">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
