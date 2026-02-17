@@ -107,7 +107,7 @@ body.light-mode header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 1.5rem;
     max-width: 1200px;
     margin: 0 auto;
@@ -126,43 +126,10 @@ header h1 {
 
 .header-controls {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
     align-items: center;
     justify-content: flex-end;
-}
-
-.dark-toggle {
-    background: var(--color-neutral-700);
-    border: 2px solid transparent;
-    border-radius: 10px;
-    padding: 0.75rem 0.875rem;
-    cursor: pointer;
-    font-size: 1.25rem;
-    transition: all var(--transition-fast);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    color: var(--color-white);
-    min-width: 44px;
-    height: 44px;
-    flex-shrink: 0;
-}
-
-body.light-mode .dark-toggle {
-    background: var(--color-neutral-200);
-    border-color: var(--color-neutral-300);
-    color: var(--color-neutral-950);
-}
-
-.dark-toggle:hover {
-    transform: scale(1.08);
-    box-shadow: var(--shadow-md);
-}
-
-.dark-toggle:hover {
-    transform: scale(1.08);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    flex-wrap: nowrap;
 }
 
 .nav-tabs {
@@ -549,6 +516,38 @@ body.light-mode .stat-card {
     font-weight: 700;
 }
 
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: var(--color-neutral-200);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+body.light-mode .progress-bar-container {
+    background: var(--color-neutral-700);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+    width: 0%;
+}
+
+.progress-text {
+    font-size: 0.875rem;
+    color: var(--color-neutral-600);
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+
+body.light-mode .progress-text {
+    color: var(--color-neutral-400);
+}
+
 body.light-mode .stat-label {
     color: var(--color-neutral-400);
 }
@@ -784,20 +783,29 @@ body.light-mode .modal-close:hover {
     
     .header-content {
         padding: 0;
+        flex-wrap: nowrap;
+        gap: 1rem;
     }
     
     .nav-tabs {
         padding: 0;
     }
     
-    .header-content {
-        flex-direction: column;
-        align-items: flex-start;
-        width: 100%;
-    }
-    
     header h1 {
         font-size: 1.5rem;
+        margin-right: auto;
+    }
+    
+    .header-controls {
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+    }
+    
+    .btn-secondary {
+        padding: 0.7rem 1.25rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        margin-top: 0;
     }
     
     .content {
@@ -843,6 +851,25 @@ body.light-mode .modal-close:hover {
 @media (max-width: 480px) {
     .container {
         padding: 0 1rem;
+    }
+    
+    header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .header-content {
+        gap: 0.75rem;
+    }
+    
+    .header-controls {
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+    }
+    
+    .btn-secondary {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
     }
     
     .nav-tabs {
@@ -989,7 +1016,7 @@ body.light-mode .modal-content {
     <div class="header-content">
         <h1>🎯 Checkpoint Tracker</h1>
         <div class="header-controls">
-            <button class="dark-toggle" id="darkToggle" title="Toggle dark mode">🌙</button>
+            <button class="btn btn-secondary" id="exportBtn" title="Export report as PDF">📥 Export PDF</button>
             <a href="index.html" class="btn btn-secondary">← Back Home</a>
         </div>
     </div>
@@ -1042,5 +1069,6 @@ body.light-mode .modal-content {
 </div>
 
 <script src="script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>
