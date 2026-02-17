@@ -668,28 +668,51 @@ function init() {
     initializeTheme();
     console.log('✅ Theme initialized');
 
-    // Initialize tabs
-    initializeTabs();
-    console.log('✅ Tabs initialized');
-
-    // Initialize all existing sections
+    // Get all subjects from localStorage
     const subjects = getSubjects();
     console.log('Found subjects:', subjects);
 
-    // For existing sections in HTML (DSA, Java, Web Dev, Projects)
-    const existingSections = document.querySelectorAll('.section');
-    console.log('Found sections:', existingSections.length);
+    // Render all tabs from localStorage
+    const navTabs = document.querySelector('.nav-tabs');
+    navTabs.innerHTML = ''; // Clear any existing tabs
+    
+    subjects.forEach((subject, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'nav-tab-wrapper';
+        wrapper.setAttribute('data-subject', subject.id);
 
-    existingSections.forEach(section => {
-        const subjectId = section.id;
-        console.log('Setting up section:', subjectId);
+        const btn = document.createElement('button');
+        btn.className = 'nav-tab';
+        if (index === 0) btn.classList.add('active'); // Make first tab active
+        btn.setAttribute('data-tab', subject.id);
+        btn.textContent = `${subject.emoji} ${subject.name}`;
         
-        if (subjectId) {
-            attachFormHandlers(subjectId);
-            renderCheckpoints(subjectId);
-            updateStats(subjectId);
-        }
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchToTab(subject.id);
+        });
+
+        wrapper.appendChild(btn);
+        navTabs.appendChild(wrapper);
+
+        // Create section for this subject
+        addSubjectSection(subject);
     });
+
+    // Attach delete handlers after creating tabs
+    attachDeleteHandlers();
+
+    // Initialize all sections
+    subjects.forEach(subject => {
+        attachFormHandlers(subject.id);
+        renderCheckpoints(subject.id);
+        updateStats(subject.id);
+    });
+
+    // Set first subject as active if available
+    if (subjects.length > 0) {
+        switchToTab(subjects[0].id);
+    }
 
     // Add subject button to header
     const headerControls = document.querySelector('.header-controls');
