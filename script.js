@@ -501,24 +501,44 @@ function attachFormHandlers(subjectId) {
     button.addEventListener('click', (e) => {
         e.preventDefault();
         console.log('🖱️ Button clicked for subject:', subjectId);
+        console.log('Section ID:', section.id);
+        console.log('Section found:', !!section);
         
-        // Get inputs from within this section using dynamic class selectors
-        const titleInput = section.querySelector(`[class*="checkpoint-title-input-"]`);
-        const descInput = section.querySelector(`[class*="checkpoint-desc-input-"]`);
-        const dateInput = section.querySelector(`[class*="checkpoint-date-"]`);
-        const priorityInput = section.querySelector(`[class*="checkpoint-priority-"]`);
+        // Debug: Log all inputs in section
+        console.log('All inputs in section:', {
+            textInputs: section.querySelectorAll('input[type="text"]').length,
+            dateInputs: section.querySelectorAll('input[type="date"]').length,
+            textareas: section.querySelectorAll('textarea').length,
+            selects: section.querySelectorAll('select').length
+        });
+        
+        // More reliable selector - search within the input-section
+        const inputSection = section.querySelector('.input-section');
+        if (!inputSection) {
+            console.error('❌ Input section not found!');
+            alert('❌ Form section not found!');
+            return;
+        }
+        
+        // Get inputs using more specific selectors
+        const titleInput = inputSection.querySelector('input[type="text"]');
+        const prioritySelect = inputSection.querySelector('select');
+        const dateInput = inputSection.querySelector('input[type="date"]');
+        const descTextarea = inputSection.querySelector('textarea');
 
-        if (!titleInput || !dateInput || !priorityInput) {
+        if (!titleInput || !dateInput || !prioritySelect) {
             console.error('❌ Form inputs not found in section:', subjectId);
-            console.error('Available elements in section:', section.querySelectorAll('input, select, textarea'));
-            alert('Form elements not found!');
+            console.error('Title input found:', !!titleInput);
+            console.error('Date input found:', !!dateInput);
+            console.error('Priority select found:', !!prioritySelect);
+            alert('❌ Form elements not found! Please refresh the page.');
             return;
         }
 
         const title = titleInput.value?.trim();
-        const desc = descInput?.value?.trim() || '';
+        const desc = descTextarea?.value?.trim() || '';
         const date = dateInput.value;
-        const priority = priorityInput.value || 'medium';
+        const priority = prioritySelect.value || 'medium';
 
         console.log('📝 Form data:', { title, date, priority, desc });
 
@@ -547,9 +567,9 @@ function attachFormHandlers(subjectId) {
 
         // Clear form
         if (titleInput) titleInput.value = '';
-        if (descInput) descInput.value = '';
+        if (descTextarea) descTextarea.value = '';
         if (dateInput) dateInput.value = '';
-        if (priorityInput) priorityInput.value = 'medium';
+        if (prioritySelect) prioritySelect.value = 'medium';
 
         console.log('✅ Checkpoint added successfully');
         alert('✅ Checkpoint added!');
